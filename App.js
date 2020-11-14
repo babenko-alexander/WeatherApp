@@ -22,7 +22,7 @@ const magnifierImg = require('./icons/magnifier.png');
 const positionImg = require('./icons/position.png');
 const navigateImg = require('./icons/navigate.png');
 
-const App: () => React$Node = () => {
+const App = () => {
   const [searchValue, setSearchValue] = useState('');
   const [searchIsOpened, setSearchIsOpened] = useState(false);
   const [city, setCity] = useState('');
@@ -44,8 +44,8 @@ const App: () => React$Node = () => {
   }, []);
 
   useEffect(() => {
-    const fetchWeatherWithLocation = async () => {
-      await axios(
+    const fetchWeatherWithLocation = () => {
+      axios(
         `https://api.openweathermap.org/data/2.5/weather?lat=${focusedLocation.latitude}&lon=${focusedLocation.longitude}&appid=56313cebd08ed7f58bce1d00f23b4f94`,
       )
         .then((result) => {
@@ -60,8 +60,8 @@ const App: () => React$Node = () => {
     fetchWeatherWithLocation();
   }, [focusedLocation]);
 
-  const fetchWeatherWithCity = useCallback(async (searchValue) => {
-    await axios(
+  const fetchWeatherWithCity = useCallback((searchValue) => {
+    axios(
       `https://api.openweathermap.org/data/2.5/weather?q=${searchValue}&appid=46360d8aab369fe07300493a0466d18a`,
     )
       .then((result) => {
@@ -88,7 +88,7 @@ const App: () => React$Node = () => {
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         {
           title: 'Geolocation Permission',
-          message: 'Electa needs access to your geolocation',
+          message: 'Application needs access to your geolocation',
           buttonNeutral: 'Ask Me Later',
           buttonNegative: 'Cancel',
           buttonPositive: 'OK',
@@ -129,7 +129,7 @@ const App: () => React$Node = () => {
       useEffect(() => {
         Animated.timing(openSearchPanel, {
           toValue: 400,
-          duration: 2000,
+          duration: 1500,
           useNativeDriver: false,
         }).start();
       }, [openSearchPanel]);
@@ -137,7 +137,7 @@ const App: () => React$Node = () => {
       useEffect(() => {
         Animated.timing(collapseSearchPanel, {
           toValue: 65,
-          duration: 2000,
+          duration: 1500,
           useNativeDriver: false,
         }).start();
       }, [collapseSearchPanel]);
@@ -147,7 +147,7 @@ const App: () => React$Node = () => {
           <Animated.View
             style={{
               ...props.style,
-              width: searchIsOpened ? collapseSearchPanel : openSearchPanel,
+              width: searchIsOpened ? openSearchPanel : collapseSearchPanel,
             }}>
             {props.children}
           </Animated.View>
@@ -223,13 +223,27 @@ const App: () => React$Node = () => {
           moveOnMarkerPress={false}>
           {markerLocation && (
             <Marker
+              onPress={() => {
+                setFocusedLocation({
+                  ...focusedLocation,
+                  ...markerLocation,
+                });
+              }}
               coordinate={markerLocation}
-              title={city}
               image={markerImg}
             />
           )}
           {userCoords && (
-            <Marker coordinate={userCoords} title={city} image={positionImg} />
+            <Marker
+              onPress={() => {
+                setFocusedLocation({
+                  ...focusedLocation,
+                  ...userCoords,
+                });
+              }}
+              coordinate={userCoords}
+              image={positionImg}
+            />
           )}
         </MapView>
         {searchValue || city ? (
@@ -242,11 +256,16 @@ const App: () => React$Node = () => {
                 : () => setModal(true)
             }
             style={styles.buttonBox}>
-            <Text style={styles.buttonText}>
-              {searchValue
-                ? `Search for ${searchValue}`
-                : `Show weather forecast for ${city}`}
-            </Text>
+            {searchValue ? (
+              <Text style={styles.buttonText}>
+                Search for <Text style={styles.boldText}>{searchValue}</Text>
+              </Text>
+            ) : (
+              <Text style={styles.buttonText}>
+                Show weather forecast for{' '}
+                <Text style={styles.boldText}>{city}</Text>
+              </Text>
+            )}
           </TouchableOpacity>
         ) : null}
       </View>
@@ -262,7 +281,7 @@ const App: () => React$Node = () => {
               onChangeText={(text) => setSearchValue(text)}
               value={searchValue}
               placeholder={'Enter city to find'}
-              style={{opacity: searchIsOpened ? 0 : 1}}
+              style={{opacity: searchIsOpened ? 1 : 0}}
             />
           </View>
           <Image
@@ -271,7 +290,7 @@ const App: () => React$Node = () => {
             })}
             width={50}
             source={navigateImg}
-            style={{opacity: searchIsOpened ? 0 : 1}}
+            style={{opacity: searchIsOpened ? 1 : 0}}
           />
         </View>
       </CollapsedView>
