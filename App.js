@@ -124,12 +124,14 @@ const App = () => {
   const CollapsedView = useCallback(
     (props) => {
       const openSearchPanel = useRef(new Animated.Value(65)).current;
-      const collapseSearchPanel = useRef(new Animated.Value(400)).current;
+      const collapseSearchPanel = useRef(
+        new Animated.Value(Dimensions.get('window').width),
+      ).current;
 
       useEffect(() => {
         Animated.timing(openSearchPanel, {
-          toValue: 400,
-          duration: 1500,
+          toValue: Dimensions.get('window').width,
+          duration: 300,
           useNativeDriver: false,
         }).start();
       }, [openSearchPanel]);
@@ -137,7 +139,7 @@ const App = () => {
       useEffect(() => {
         Animated.timing(collapseSearchPanel, {
           toValue: 65,
-          duration: 1500,
+          duration: 300,
           useNativeDriver: false,
         }).start();
       }, [collapseSearchPanel]);
@@ -271,19 +273,20 @@ const App = () => {
       </View>
       <CollapsedView>
         <View style={styles.searchBox}>
-          <View style={styles.rowFlex}>
-            <Image
-              onPress={() => setSearchIsOpened(!searchIsOpened)}
-              width={60}
-              source={magnifierImg}
-            />
-            <TextInput
-              onChangeText={(text) => setSearchValue(text)}
-              value={searchValue}
-              placeholder={'Enter city to find'}
-              style={{opacity: searchIsOpened ? 1 : 0}}
-            />
-          </View>
+          <Image
+            onPress={() => setSearchIsOpened(!searchIsOpened)}
+            width={60}
+            source={magnifierImg}
+          />
+          <TextInput
+            onChangeText={(text) => setSearchValue(text)}
+            value={searchValue}
+            placeholder={'Enter city to find'}
+            style={{
+              flex: 1,
+              opacity: searchIsOpened ? 1 : 0,
+            }}
+          />
           <Image
             onPress={useCallback(() => {
               getCoords();
@@ -354,7 +357,6 @@ const styles = StyleSheet.create({
   },
 
   boldText: {fontWeight: '700'},
-  rowFlex: {flexDirection: 'row'},
 });
 
 export default App;
